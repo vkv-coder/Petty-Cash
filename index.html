@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>PettyCash Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#f0f4f8;--surface:#fff;--surface2:#e8eef5;--accent:#1a6fdb;--al:#e8f0fb;--a2:#0a4fa0;--green:#16a34a;--red:#dc2626;--orange:#ea580c;--text:#1a2332;--muted:#64748b;--border:#cbd5e1;--bl:#e2e8f0;--r:16px;--rs:10px;--sh:0 2px 12px rgba(26,111,219,.07);--shm:0 4px 20px rgba(26,111,219,.13)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:480px;margin:0 auto;overflow-x:hidden}
+#splash{position:fixed;inset:0;z-index:999;background:var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.sl{font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;color:#fff}.sl span{color:#fde68a}
+.ss{color:rgba(255,255,255,.7);font-size:.9rem;letter-spacing:2px;text-transform:uppercase}
+.sr{width:56px;height:56px;border-radius:50%;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin .8s linear infinite;margin-top:24px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:linear-gradient(160deg,#1a6fdb 0%,#0a4fa0 55%,#f0f4f8 100%)}
+.ll{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;color:#fff;margin-bottom:4px}.ll span{color:#fde68a}
+.lt{color:rgba(255,255,255,.75);font-size:.78rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:40px}
+.lc{width:100%;background:#fff;border-radius:var(--r);box-shadow:0 8px 32px rgba(0,0,0,.15);padding:28px 24px}
+.lc h2{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;margin-bottom:24px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600}
+.field input,.field select,.field textarea{width:100%;background:var(--surface2);border:1.5px solid var(--bl);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:1rem;padding:12px 14px;outline:none;transition:border-color .2s,box-shadow .2s;appearance:none;-webkit-appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,111,219,.12);background:#fff}
+.field textarea{resize:none;min-height:80px}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.date-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.date-row .field{margin-bottom:0}
+.btn{width:100%;padding:14px;border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;border:none;cursor:pointer;transition:transform .1s,box-shadow .2s;letter-spacing:.5px}
+.btn:active{transform:scale(.97)}
+.bp{background:var(--accent);color:#fff;box-shadow:0 4px 12px rgba(26,111,219,.3)}
+.bs{background:var(--surface2);color:var(--text);border:1.5px solid var(--border)}
+.bd{background:var(--red);color:#fff}
+.bg{background:var(--green);color:#fff;box-shadow:0 4px 12px rgba(22,163,74,.3)}
+.bx{background:#1d6f42;color:#fff;box-shadow:0 4px 12px rgba(29,111,66,.3);display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-sm{width:auto;padding:7px 14px;font-size:.82rem;border-radius:8px}
+#app{display:none;flex-direction:column;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid var(--bl);padding:13px 20px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;justify-content:space-between}
+.topbar-title{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700}
+.topbar-back{background:var(--al);border:none;color:var(--accent);font-size:1.2rem;cursor:pointer;padding:6px 10px;border-radius:8px}
+.topbar-right{display:flex;gap:8px;align-items:center}
+.rb{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:4px 10px;border-radius:20px}
+.role-owner{background:#fef3c7;color:#92400e}
+.role-branch{background:#dcfce7;color:#166534}
+.role-staff{background:var(--al);color:var(--a2)}
+.xbtn{background:none;border:1.5px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 10px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif}
+.screen{display:none;flex-direction:column;flex:1;padding:20px;animation:fi .2s ease}
+.screen.active{display:flex}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.hg{margin-bottom:20px}
+.hg h1{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800}
+.hg h1 span{color:var(--accent)}
+.hg p{color:var(--muted);font-size:.85rem;margin-top:4px}
+.bc{background:linear-gradient(135deg,var(--accent) 0%,var(--a2) 100%);border-radius:var(--r);padding:22px 20px;margin-bottom:20px;box-shadow:0 6px 20px rgba(26,111,219,.3)}
+.bl2{font-size:.72rem;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:1.5px}
+.ba{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:#fff;margin:6px 0 2px}
+.bsb{font-size:.8rem;color:rgba(255,255,255,.7)}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mc{background:#fff;border:1.5px solid var(--bl);border-radius:var(--r);padding:18px 14px;cursor:pointer;transition:border-color .2s,transform .1s,box-shadow .2s;display:flex;flex-direction:column;gap:8px;box-shadow:var(--sh)}
+.mc:active{transform:scale(.97)}
+.mc:hover{border-color:var(--accent);box-shadow:var(--shm)}
+.mc .icon{font-size:1.6rem}
+.mc .label{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700}
+.mc .desc{font-size:.73rem;color:var(--muted)}
+.mcf{grid-column:1/-1}
+.st{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;margin-top:4px}
+.li{background:#fff;border:1.5px solid var(--bl);border-radius:var(--rs);padding:14px 16px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:border-color .2s;box-shadow:var(--sh)}
+.li:hover{border-color:var(--accent)}
+.ll2{display:flex;flex-direction:column;gap:2px;flex:1}
+.ln{font-weight:600;font-size:.95rem}
+.ls{font-size:.78rem;color:var(--muted)}
+.lr{text-align:right}
+.la{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem}
+.ap{color:var(--green)}.an{color:var(--red)}.at{color:var(--accent)}
+.ch{color:var(--muted);font-size:1.1rem;margin-left:8px}
+.ti{background:#fff;border:1.5px solid var(--bl);border-radius:var(--rs);padding:14px 16px;margin-bottom:8px;display:flex;align-items:flex-start;justify-content:space-between;box-shadow:var(--sh)}
+.ti.oe{border-left:3px solid var(--accent)}
+.tl{display:flex;flex-direction:column;gap:3px;flex:1}
+.tc{font-size:.9rem;font-weight:600}
+.td{font-size:.75rem;color:var(--muted)}
+.tu{font-size:.75rem;color:var(--accent);font-weight:500}
+.tn{font-size:.75rem;color:var(--muted);font-style:italic}
+.tr2{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.ta{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem}
+.tb{font-size:.75rem;color:var(--muted)}
+.teb{font-size:.7rem;padding:3px 8px;border-radius:6px;background:var(--al);color:var(--accent);border:none;cursor:pointer;font-weight:600}
+.sr2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.sb{background:#fff;border:1.5px solid var(--bl);border-radius:var(--rs);padding:14px;box-shadow:var(--sh)}
+.sl2{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:500}
+.sv{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700}
+.fc{background:#fff;border:1.5px solid var(--bl);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+.rb2{background:var(--al);border:1.5px solid rgba(26,111,219,.2);border-radius:var(--rs);padding:12px 16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.rb2 .lbl{font-size:.72rem;color:var(--accent);text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.rb2 .val{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--accent)}
+.fb{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+.fc2{background:#fff;border:1.5px solid var(--bl);border-radius:var(--rs);padding:6px 14px;font-size:.8rem;font-weight:600;cursor:pointer;white-space:nowrap;color:var(--muted);transition:all .2s}
+.fc2.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.rc{background:#fff;border:1.5px solid var(--bl);border-radius:var(--r);padding:18px;margin-bottom:12px;box-shadow:var(--sh)}
+.rc h3{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;margin-bottom:4px}
+.rc p{font-size:.8rem;color:var(--muted);margin-bottom:14px}
+#edit-modal{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}
+#edit-modal.show{display:flex}
+.modal-card{background:#fff;border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px;box-shadow:0 -8px 32px rgba(0,0,0,.15);animation:su .25s ease;max-height:90vh;overflow-y:auto}
+@keyframes su{from{transform:translateY(100%)}to{transform:none}}
+.mt{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:20px}
+.ma{display:flex;gap:10px;margin-top:16px}
+.ma .btn{flex:1}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);border-radius:30px;padding:12px 24px;font-size:.88rem;font-weight:500;z-index:9999;color:#fff;transition:transform .3s ease;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.success{background:var(--green)}
+#toast.error{background:var(--red)}
+#loading{position:fixed;inset:0;z-index:500;background:rgba(240,244,248,.85);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+#loading.show{display:flex}
+#loading .ring{width:44px;height:44px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--accent);animation:spin .8s linear infinite}
+.es{text-align:center;padding:48px 24px;color:var(--muted)}
+.es .icon{font-size:2.5rem;margin-bottom:12px}
+.ct{font-size:.7rem;color:rgba(255,255,255,.6);text-align:center;margin-top:16px}
+</style>
+</head>
+<body>
+<div id="splash"><div class="sl">Petty<span>Cash</span></div><div class="ss">Branch Management</div><div class="sr"></div></div>
+<div id="loading"><div class="ring"></div><p>Please wait...</p></div>
+<div id="toast"></div>
+
+<div id="edit-modal">
+  <div class="modal-card">
+    <div class="mt">✏️ Edit Transaction</div>
+    <div class="field"><label>Staff / User Name</label><input type="text" id="edit-username" placeholder="Name"></div>
+    <div class="field"><label>Date</label><input type="date" id="edit-date"></div>
+    <div class="field"><label>Amount (₹)</label><input type="number" id="edit-amount" placeholder="0"></div>
+    <div class="field"><label>Category</label>
+      <select id="edit-category">
+        <option>Vehicle Maintenance</option><option>Driver Advance</option><option>Stationery</option>
+        <option>Refreshment</option><option>Petrol</option><option>Travel</option>
+        <option>Return to Branch Head</option><option>Return to Owner</option>
+        <option>Cash from Owner</option><option>Cash from Branch</option><option>Other</option>
+      </select>
+    </div>
+    <div class="field"><label>Notes</label><textarea id="edit-notes" placeholder="Optional..."></textarea></div>
+    <div class="ma">
+      <button class="btn bd btn-sm" onclick="deleteTransaction()" style="flex:0.7">🗑 Delete</button>
+      <button class="btn bs btn-sm" onclick="closeEditModal()">Cancel</button>
+      <button class="btn bp btn-sm" onclick="saveEditTransaction()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="login-screen" style="display:none">
+  <div class="ll">Petty<span>Cash</span></div>
+  <div class="lt">Branch Management System</div>
+  <div class="lc">
+    <h2>Sign In</h2>
+    <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="your@email.com" autocomplete="email"></div>
+    <div class="field"><label>Password</label><input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"></div>
+    <button class="btn bp" onclick="doLogin()">Sign In</button>
+  </div>
+  <div class="ct"></div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <button class="topbar-back" id="back-btn" onclick="goBack()" style="visibility:hidden">←</button>
+    <div class="topbar-title" id="topbar-title">PettyCash</div>
+    <div class="topbar-right">
+      <span class="rb" id="role-badge"></span>
+      <button class="xbtn" onclick="doLogout()">Exit</button>
+    </div>
+  </div>
+
+  <!-- OWNER HOME -->
+  <div class="screen" id="screen-owner-home">
+    <div class="hg"><h1>Hello, <span id="owner-name-display">Owner</span> 👋</h1><p>Here's your cash overview</p></div>
+    <div class="bc"><div class="bl2">Total Cash Deployed</div><div class="ba" id="owner-total-deployed">₹0</div><div class="bsb">Across all branches</div></div>
+    <div class="st">Actions</div>
+    <div class="mg">
+      <div class="mc" onclick="showScreen('screen-owner-send-cash')"><div class="icon">💸</div><div class="label">Send Cash</div><div class="desc">To a branch</div></div>
+      <div class="mc" onclick="showOwnerBranchSummary()"><div class="icon">🏢</div><div class="label">Branch Summary</div><div class="desc">All branches</div></div>
+      <div class="mc" onclick="showScreen('screen-owner-all-tx')"><div class="icon">🔍</div><div class="label">All Transactions</div><div class="desc">View & Edit</div></div>
+      <div class="mc" onclick="showScreen('screen-owner-reports')"><div class="icon">📊</div><div class="label">Excel Reports</div><div class="desc">Download & Print</div></div>
+    </div>
+  </div>
+
+  <!-- OWNER SEND CASH -->
+  <div class="screen" id="screen-owner-send-cash">
+    <div class="st">Send Cash to Branch</div>
+    <div class="fc">
+      <div class="field"><label>Select Branch</label><select id="owner-branch-select" onchange="loadBranchBalanceForOwner()"><option value="">-- Select Branch --</option></select></div>
+      <div class="rb2" id="owner-branch-balance-bar" style="display:none"><div><div class="lbl">Branch Current Balance</div></div><div class="val" id="owner-branch-balance-val">₹0</div></div>
+      <div class="field"><label>Date</label><input type="date" id="owner-send-date"></div>
+      <div class="field"><label>Amount (₹)</label><input type="number" id="owner-send-amount" placeholder="0" min="1"></div>
+      <button class="btn bp" onclick="submitOwnerSendCash()">Send Cash</button>
+    </div>
+  </div>
+
+  <!-- OWNER BRANCH LIST -->
+  <div class="screen" id="screen-owner-branch-list"><div class="st">Branch Summary</div><div id="owner-branch-list-container"></div></div>
+
+  <!-- OWNER BRANCH DETAIL -->
+  <div class="screen" id="screen-owner-branch-detail"><div class="sr2" id="owner-branch-detail-stats"></div><div class="st">Staff Balances</div><div id="owner-branch-detail-staff"></div></div>
+
+  <!-- ALL TRANSACTIONS -->
+  <div class="screen" id="screen-owner-all-tx">
+    <div class="fb">
+      <div class="fc2 active" onclick="filterTx('all',this)">All</div>
+      <div class="fc2" onclick="filterTx('Branch',this)">Branch</div>
+      <div class="fc2" onclick="filterTx('Staff',this)">Staff</div>
+      <div class="fc2" onclick="filterTx('EXPENSE',this)">Expenses</div>
+    </div>
+    <div id="owner-all-tx-container"></div>
+  </div>
+
+  <!-- EXCEL REPORTS -->
+  <div class="screen" id="screen-owner-reports">
+    <div class="st">📊 Excel Reports</div>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px;">Select date range then download any report. Open in Excel or Google Sheets to print and sort.</p>
+    <div class="fc" style="margin-bottom:16px;">
+      <div class="st">Date Range</div>
+      <div class="date-row">
+        <div class="field"><label>From Date</label><input type="date" id="report-from-date"></div>
+        <div class="field"><label>To Date</label><input type="date" id="report-to-date"></div>
+      </div>
+    </div>
+    <div class="rc"><h3>🏢 Branch-wise Cash Summary</h3><p>Current balance of each branch including staff cash on hand.</p><button class="btn bx" onclick="downloadReport('branch-summary')">⬇ Download Excel</button></div>
+    <div class="rc"><h3>👤 Staff-wise Transaction Detail</h3><p>Every transaction per staff member in selected date range.</p><button class="btn bx" onclick="downloadReport('staff-detail')">⬇ Download Excel</button></div>
+    <div class="rc"><h3>📅 Date-range Expense Report</h3><p>All expenses across all branches and staff in date range.</p><button class="btn bx" onclick="downloadReport('date-range')">⬇ Download Excel</button></div>
+    <div class="rc"><h3>🏷️ Category-wise Expense Summary</h3><p>Total per category (Petrol, Travel etc.) in date range.</p><button class="btn bx" onclick="downloadReport('category-summary')">⬇ Download Excel</button></div>
+  </div>
+
+  <!-- BRANCH HOME -->
+  <div class="screen" id="screen-branch-home">
+    <div class="hg"><h1>Hello, <span id="branch-name-display">Branch</span> 👋</h1><p id="branch-company-display">Branch Dashboard</p></div>
+    <div class="bc"><div class="bl2">Branch Cash Balance</div><div class="ba" id="branch-balance-display">₹0</div><div class="bsb">Available to distribute</div></div>
+    <div class="st">Actions</div>
+    <div class="mg">
+      <div class="mc" onclick="showBranchStaffList('give')"><div class="icon">💰</div><div class="label">Give Cash</div><div class="desc">To staff</div></div>
+      <div class="mc" onclick="showBranchStaffList('summary')"><div class="icon">👥</div><div class="label">Staff Summary</div><div class="desc">View balances</div></div>
+      <div class="mc" onclick="showScreen('screen-branch-expense')"><div class="icon">🧾</div><div class="label">My Expense</div><div class="desc">Record expense</div></div>
+      <div class="mc" onclick="showScreen('screen-branch-history')"><div class="icon">📋</div><div class="label">My History</div><div class="desc">Transactions</div></div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-branch-staff-select"><div class="st" id="branch-staff-select-title">Select Staff</div><div id="branch-staff-list-container"></div></div>
+
+  <div class="screen" id="screen-branch-give-cash">
+    <div class="st">Give Cash to Staff</div>
+    <div class="fc">
+      <div class="rb2"><div><div class="lbl">Staff: <span id="branch-give-staff-name">-</span></div><div class="lbl" style="margin-top:4px">Staff Balance</div></div><div class="val" id="branch-give-staff-balance">₹0</div></div>
+      <div class="field"><label>Date</label><input type="date" id="branch-give-date"></div>
+      <div class="field"><label>Amount (₹)</label><input type="number" id="branch-give-amount" placeholder="0" min="1"></div>
+      <button class="btn bp" onclick="submitBranchGiveCash()">Give Cash</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-branch-expense">
+    <div class="st">Record My Expense</div>
+    <div class="fc">
+      <div class="rb2"><div><div class="lbl">My Balance</div></div><div class="val" id="branch-own-balance">₹0</div></div>
+      <div class="field"><label>Date</label><input type="date" id="branch-expense-date"></div>
+      <div class="field"><label>Amount (₹)</label><input type="number" id="branch-expense-amount" placeholder="0" min="1"></div>
+      <div class="field"><label>Category</label>
+        <select id="branch-expense-category" onchange="toggleNotesField('branch')">
+          <option value="">-- Select Category --</option>
+          <option>Vehicle Maintenance</option><option>Driver Advance</option><option>Stationery</option>
+          <option>Refreshment</option><option>Petrol</option><option>Travel</option>
+          <option>Return to Owner</option><option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field" id="branch-notes-field" style="display:none"><label>Notes <span style="color:var(--red)">*Required</span></label><textarea id="branch-expense-notes" placeholder="Describe expense..."></textarea></div>
+      <button class="btn bp" onclick="submitBranchExpense()">Save Expense</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-branch-staff-summary"><div class="sr2" id="branch-staff-summary-stats"></div><div class="st">Last 10 Transactions</div><div id="branch-staff-summary-txs"></div></div>
+  <div class="screen" id="screen-branch-history"><div class="st">My Transaction History</div><div id="branch-history-container"></div></div>
+
+  <!-- STAFF HOME -->
+  <div class="screen" id="screen-staff-home">
+    <div class="hg"><h1>Hello, <span id="staff-name-display">Staff</span> 👋</h1><p id="staff-branch-display">Staff Dashboard</p></div>
+    <div class="bc"><div class="bl2">My Cash Balance</div><div class="ba" id="staff-balance-display">₹0</div><div class="bsb">Cash in hand</div></div>
+    <div class="st">Actions</div>
+    <div class="mg">
+      <div class="mc mcf" onclick="showStaffExpenseForm()"><div class="icon">🧾</div><div class="label">New Entry</div><div class="desc">Record an expense</div></div>
+      <div class="mc mcf" onclick="showStaffSummary()"><div class="icon">📋</div><div class="label">My Summary</div><div class="desc">Last 10 transactions</div></div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-staff-expense">
+    <div class="st">New Expense Entry</div>
+    <div class="fc">
+      <div class="rb2"><div><div class="lbl">My Current Balance</div></div><div class="val" id="staff-form-balance">₹0</div></div>
+      <div class="field"><label>Date</label><input type="date" id="staff-expense-date"></div>
+      <div class="field"><label>Amount (₹)</label><input type="number" id="staff-expense-amount" placeholder="0" min="1"></div>
+      <div class="field"><label>Category</label>
+        <select id="staff-expense-category" onchange="toggleNotesField('staff')">
+          <option value="">-- Select Category --</option>
+          <option>Vehicle Maintenance</option><option>Driver Advance</option><option>Stationery</option>
+          <option>Refreshment</option><option>Petrol</option><option>Travel</option>
+          <option>Return to Branch Head</option><option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field" id="staff-notes-field" style="display:none"><label>Notes <span style="color:var(--red)">*Required</span></label><textarea id="staff-expense-notes" placeholder="Describe expense..."></textarea></div>
+      <button class="btn bp" onclick="submitStaffExpense()">Save Entry</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-staff-summary"><div class="sr2" id="staff-summary-stats"></div><div class="st">Last 10 Transactions</div><div id="staff-summary-txs"></div></div>
+</div>
+
+<script>
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzunmVq8xxNgEd-Nur5lQdrC3fFyiGscjBgI6rgaxWpIpt-HV_IAnbGCwYIdM0Jj1YhTg/exec';
+let currentUser=null,screenStack=[],selectedStaffId=null,selectedStaffName=null,branchGiveMode='give',allTxData=[],currentEditTxId=null;
+
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    document.getElementById('splash').style.display='none';
+    const s=localStorage.getItem('pc_user');
+    if(s){currentUser=JSON.parse(s);initApp();}
+    else document.getElementById('login-screen').style.display='flex';
+  },1400);
+});
+
+async function api(action,data={}){
+  showLoading(true);
+  try{
+    const p=new URLSearchParams({action,...data});
+    const r=await fetch(`${SCRIPT_URL}?${p}`);
+    const j=await r.json();
+    showLoading(false);return j;
+  }catch(e){showLoading(false);toast('Connection error','error');return{success:false};}
+}
+
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim().toLowerCase();
+  const password=document.getElementById('login-password').value;
+  if(!email||!password){toast('Enter email and password','error');return;}
+  const res=await api('login',{email,password});
+  if(res.success){currentUser=res.user;localStorage.setItem('pc_user',JSON.stringify(currentUser));document.getElementById('login-screen').style.display='none';initApp();}
+  else toast(res.error||'Login failed','error');
+}
+function doLogout(){localStorage.removeItem('pc_user');currentUser=null;screenStack=[];document.getElementById('app').style.display='none';document.getElementById('login-screen').style.display='flex';document.getElementById('login-email').value='';document.getElementById('login-password').value='';}
+
+function initApp(){
+  document.getElementById('app').style.display='flex';
+  const b=document.getElementById('role-badge');b.textContent=currentUser.role;b.className='rb role-'+currentUser.role.toLowerCase();
+  if(currentUser.role==='Owner'){loadOwnerHome();showScreen('screen-owner-home');}
+  else if(currentUser.role==='Branch'){loadBranchHome();showScreen('screen-branch-home');}
+  else{loadStaffHome();showScreen('screen-staff-home');}
+}
+
+function showScreen(id,title){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  screenStack.push(id);
+  const t={'screen-owner-home':'Dashboard','screen-owner-send-cash':'Send Cash','screen-owner-branch-list':'Branch Summary','screen-owner-branch-detail':title||'Branch Detail','screen-owner-all-tx':'All Transactions','screen-owner-reports':'Excel Reports','screen-branch-home':'Dashboard','screen-branch-staff-select':title||'Select Staff','screen-branch-give-cash':'Give Cash','screen-branch-expense':'My Expense','screen-branch-staff-summary':title||'Staff Summary','screen-branch-history':'My History','screen-staff-home':'Dashboard','screen-staff-expense':'New Entry','screen-staff-summary':'My Summary'};
+  document.getElementById('topbar-title').textContent=t[id]||'PettyCash';
+  document.getElementById('back-btn').style.visibility=id.endsWith('-home')?'hidden':'visible';
+  if(id==='screen-branch-expense')loadBranchOwnBalance();
+  if(id==='screen-branch-history')loadBranchHistory();
+  if(id==='screen-owner-all-tx')loadAllTransactions();
+  if(id==='screen-owner-reports')initReportDates();
+}
+function goBack(){if(screenStack.length<=1)return;screenStack.pop();const p=screenStack[screenStack.length-1];screenStack.pop();showScreen(p);}
+
+function fmt(n){return'₹'+Number(n||0).toLocaleString('en-IN');}
+function today(){return new Date().toISOString().split('T')[0];}
+function firstOfMonth(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;}
+function toast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className='show '+type;setTimeout(()=>t.className='',2500);}
+function showLoading(v){document.getElementById('loading').className=v?'show':'';}
+function toggleNotesField(role){const s=document.getElementById(role+'-expense-category').value;document.getElementById(role+'-notes-field').style.display=s==='Other'?'block':'none';if(s!=='Other')document.getElementById(role+'-expense-notes').value='';}
+
+function renderTxList(txs,cId){
+  const c=document.getElementById(cId);
+  if(!txs||!txs.length){c.innerHTML='<div class="es"><div class="icon">📭</div><p>No transactions yet</p></div>';return;}
+  c.innerHTML=txs.map(tx=>`<div class="ti"><div class="tl"><div class="tc">${tx.category||'Cash Transfer'}</div>${tx.userName?`<div class="tu">👤 ${tx.userName}</div>`:''}<div class="td">${tx.date}</div>${tx.notes?`<div class="tn">${tx.notes}</div>`:''}</div><div class="tr2"><div class="ta an">${fmt(tx.amount)}</div>${tx.balance!==undefined?`<div class="tb">Bal: ${fmt(tx.balance)}</div>`:''}</div></div>`).join('');
+}
+
+// OWNER
+async function loadOwnerHome(){
+  document.getElementById('owner-name-display').textContent=currentUser.name;
+  const r=await api('ownerStats',{userId:currentUser.id});
+  if(r.success)document.getElementById('owner-total-deployed').textContent=fmt(r.totalDeployed);
+  const b=await api('getBranches',{userId:currentUser.id});
+  if(b.success){const s=document.getElementById('owner-branch-select');s.innerHTML='<option value="">-- Select Branch --</option>';b.branches.forEach(br=>s.innerHTML+=`<option value="${br.id}">${br.name}</option>`);}
+  document.getElementById('owner-send-date').value=today();
+}
+async function loadBranchBalanceForOwner(){
+  const bid=document.getElementById('owner-branch-select').value;
+  const bar=document.getElementById('owner-branch-balance-bar');
+  if(!bid){bar.style.display='none';return;}
+  const r=await api('getBranchBalance',{branchId:bid,userId:currentUser.id});
+  if(r.success){bar.style.display='flex';document.getElementById('owner-branch-balance-val').textContent=fmt(r.balance);}
+}
+async function submitOwnerSendCash(){
+  const bid=document.getElementById('owner-branch-select').value,date=document.getElementById('owner-send-date').value,amount=document.getElementById('owner-send-amount').value;
+  if(!bid){toast('Select a branch','error');return;}if(!amount||amount<=0){toast('Enter valid amount','error');return;}
+  const r=await api('sendCashToBranch',{ownerId:currentUser.id,branchId:bid,date,amount});
+  if(r.success){toast('Cash sent! ✓');document.getElementById('owner-send-amount').value='';loadOwnerHome();goBack();}else toast(r.error||'Failed','error');
+}
+async function showOwnerBranchSummary(){
+  showScreen('screen-owner-branch-list');
+  const r=await api('getAllBranchSummary',{userId:currentUser.id});
+  const c=document.getElementById('owner-branch-list-container');
+  if(!r.success||!r.branches.length){c.innerHTML='<div class="es"><div class="icon">🏢</div><p>No branches</p></div>';return;}
+  c.innerHTML=r.branches.map(b=>`<div class="li" onclick="showOwnerBranchDetail('${b.id}','${b.name}')"><div class="ll2"><div class="ln">${b.name}</div><div class="ls">Staff: ${fmt(b.staffTotal)}</div></div><div class="lr"><div class="la at">${fmt(b.balance)}</div><div class="ls">bal.</div></div><span class="ch">›</span></div>`).join('');
+}
+async function showOwnerBranchDetail(bid,bname){
+  showScreen('screen-owner-branch-detail',bname);
+  const r=await api('getBranchDetail',{branchId:bid,userId:currentUser.id});
+  if(!r.success)return;
+  document.getElementById('owner-branch-detail-stats').innerHTML=`<div class="sb"><div class="sl2">Branch Balance</div><div class="sv at">${fmt(r.branchBalance)}</div></div><div class="sb"><div class="sl2">Total Incl. Staff</div><div class="sv ap">${fmt(r.totalWithStaff)}</div></div>`;
+  const c=document.getElementById('owner-branch-detail-staff');
+  if(!r.staff||!r.staff.length){c.innerHTML='<div class="es"><div class="icon">👥</div><p>No staff</p></div>';return;}
+  c.innerHTML=r.staff.map(s=>`<div class="li"><div class="ll2"><div class="ln">${s.name}</div></div><div class="lr"><div class="la at">${fmt(s.balance)}</div></div></div>`).join('');
+}
+
+// ALL TX + EDIT
+async function loadAllTransactions(){
+  const r=await api('getAllTransactions',{userId:currentUser.id});
+  if(r.success){allTxData=r.transactions;renderAllTx(allTxData);}
+}
+function renderAllTx(txs){
+  const c=document.getElementById('owner-all-tx-container');
+  if(!txs||!txs.length){c.innerHTML='<div class="es"><div class="icon">📭</div><p>No transactions</p></div>';return;}
+  c.innerHTML=txs.map(tx=>`<div class="ti oe"><div class="tl"><div class="tc">${tx.category||'Cash Transfer'}</div><div class="tu">👤 ${tx.userName||'-'}</div><div class="td">${tx.date}</div>${tx.notes?`<div class="tn">${tx.notes}</div>`:''}</div><div class="tr2"><div class="ta an">${fmt(tx.amount)}</div><button class="teb" onclick="openEditModal('${tx.id}','${(tx.userName||'').replace(/'/g,"\\'")}','${tx.date}',${tx.amount},'${(tx.category||'').replace(/'/g,"\\'")}','${(tx.notes||'').replace(/'/g,"\\'")}')">✏️ Edit</button></div></div>`).join('');
+}
+function filterTx(type,el){document.querySelectorAll('.fc2').forEach(c=>c.classList.remove('active'));el.classList.add('active');if(type==='all'){renderAllTx(allTxData);return;}renderAllTx(allTxData.filter(tx=>type==='EXPENSE'?tx.txType==='EXPENSE':tx.userRole===type));}
+function openEditModal(txId,userName,date,amount,category,notes){currentEditTxId=txId;document.getElementById('edit-username').value=userName;document.getElementById('edit-date').value=date;document.getElementById('edit-amount').value=amount;document.getElementById('edit-category').value=category;document.getElementById('edit-notes').value=notes;document.getElementById('edit-modal').classList.add('show');}
+function closeEditModal(){document.getElementById('edit-modal').classList.remove('show');currentEditTxId=null;}
+async function saveEditTransaction(){
+  if(!currentEditTxId)return;
+  const r=await api('editTransaction',{txId:currentEditTxId,userId:currentUser.id,userName:document.getElementById('edit-username').value,date:document.getElementById('edit-date').value,amount:document.getElementById('edit-amount').value,category:document.getElementById('edit-category').value,notes:document.getElementById('edit-notes').value});
+  if(r.success){toast('Updated! ✓');closeEditModal();loadAllTransactions();loadOwnerHome();}else toast(r.error||'Failed','error');
+}
+async function deleteTransaction(){
+  if(!currentEditTxId)return;
+  if(!confirm('DELETE this transaction permanently?'))return;
+  const r=await api('deleteTransaction',{txId:currentEditTxId,userId:currentUser.id});
+  if(r.success){toast('Deleted!');closeEditModal();loadAllTransactions();loadOwnerHome();}else toast(r.error||'Failed','error');
+}
+
+// EXCEL REPORTS
+function initReportDates(){document.getElementById('report-from-date').value=firstOfMonth();document.getElementById('report-to-date').value=today();}
+function getReportDates(){const f=document.getElementById('report-from-date').value,t=document.getElementById('report-to-date').value;if(!f||!t){toast('Select date range','error');return null;}if(f>t){toast('From must be before To','error');return null;}return{from:f,to:t};}
+
+async function downloadReport(type){
+  const dates=getReportDates();if(!dates)return;
+  toast('Preparing...','success');
+  const res=await api('getReportData',{userId:currentUser.id,fromDate:dates.from,toDate:dates.to});
+  if(!res.success){toast((res.error||'Failed to fetch data'),'error');return;}
+  const wb=XLSX.utils.book_new();
+  const co=currentUser.company||'PettyCash';
+  const dr=`${dates.from} to ${dates.to}`;
+  const gen=`Generated: ${new Date().toLocaleString('en-IN')}`;
+
+  if(type==='branch-summary'){
+    // Section 1: Current balances
+    const rows=[[`${co} — Branch-wise Cash Summary`],[`Date Range: ${dr}`],[gen],[],['Branch Name','Branch Balance (₹)','Staff Cash on Hand (₹)','Total Balance (₹)']];
+    let gb=0,gs=0;
+    (res.branches||[]).forEach(b=>{rows.push([b.name,b.balance,b.staffTotal,b.balance+b.staffTotal]);gb+=b.balance;gs+=b.staffTotal;});
+    rows.push([]);rows.push(['GRAND TOTAL',gb,gs,gb+gs]);
+    // Section 2: Date-wise transactions
+    rows.push([]);rows.push([]);rows.push([`Date-wise Transactions (${dr})`]);
+    rows.push(['Date','Branch','From','To','Transaction Type','Amount (₹)','Notes']);
+    const btxs = res.branchTransactions||[];
+    if(btxs.length){
+      btxs.forEach(tx=>rows.push([tx.date,tx.branchName,tx.fromName,tx.toName,tx.txType,tx.amount,tx.notes]));
+    } else {
+      rows.push(['No transactions in this date range','','','','','','']);
+    }
+    const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:14},{wch:22},{wch:20},{wch:20},{wch:22},{wch:14},{wch:30}];
+    XLSX.utils.book_append_sheet(wb,ws,'Branch Summary');XLSX.writeFile(wb,`Branch_Summary_${dates.from}_${dates.to}.xlsx`);
+
+  }else if(type==='staff-detail'){
+    const rows=[[`${co} — Staff-wise Transaction Detail`],[`Date Range: ${dr}`],[gen],[],['Branch','Staff Name','Date','Category','Cash Received (₹)','Expense Amount (₹)','Notes','Running Balance (₹)']];
+    (res.staffTransactions||[]).forEach(tx=>rows.push([tx.branchName,tx.staffName,tx.date,tx.category,tx.cashReceived,tx.expenseAmount,tx.notes||'',tx.runningBalance]));
+    if(!res.staffTransactions||!res.staffTransactions.length)rows.push(['No transactions in this date range','','','','','','']);
+    const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:20},{wch:20},{wch:14},{wch:22},{wch:18},{wch:18},{wch:30},{wch:20}];ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:7}}];
+    XLSX.utils.book_append_sheet(wb,ws,'Staff Transactions');XLSX.writeFile(wb,`Staff_Transactions_${dates.from}_${dates.to}.xlsx`);
+
+  }else if(type==='date-range'){
+    const rows=[[`${co} — Expense Report`],[`Date Range: ${dr}`],[gen],[],['Date','User Name','Role','Branch','Category','Amount (₹)','Notes']];
+    let tot=0;
+    (res.allExpenses||[]).forEach(tx=>{rows.push([tx.date,tx.userName,tx.userRole,tx.branchName,tx.category,tx.amount,tx.notes||'']);tot+=tx.amount;});
+    rows.push([]);rows.push(['','','','','TOTAL',tot,'']);
+    if(!res.allExpenses||!res.allExpenses.length)rows.push(['No expenses in this date range']);
+    const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:14},{wch:20},{wch:10},{wch:20},{wch:22},{wch:14},{wch:30}];ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:6}}];
+    XLSX.utils.book_append_sheet(wb,ws,'Expense Report');XLSX.writeFile(wb,`Expense_Report_${dates.from}_${dates.to}.xlsx`);
+
+  }else if(type==='category-summary'){
+    const bcm = res.branchCategoryMap || {};
+    const rows=[[`${co} — Category-wise Expense Summary (Branch-wise)`],[`Date Range: ${dr}`],[gen]];
+    const grandTotals = {};
+    Object.entries(bcm).forEach(([bName, cats])=>{
+      rows.push([]);rows.push([`Branch: ${bName}`]);
+      rows.push(['Expense Category','Amount (₹)','% of Branch Total']);
+      const bTotal = Object.values(cats).reduce((a,b)=>a+b,0);
+      Object.entries(cats).sort((a,b)=>b[1]-a[1]).forEach(([cat,amt])=>{
+        rows.push([cat,amt,bTotal?((amt/bTotal)*100).toFixed(1)+'%':'0%']);
+        if(!grandTotals[cat])grandTotals[cat]=0;
+        grandTotals[cat]+=amt;
+      });
+      rows.push([`${bName} TOTAL`,bTotal,'100%']);
+    });
+    const gt=Object.values(grandTotals).reduce((a,b)=>a+b,0);
+    rows.push([]);rows.push(['GRAND TOTAL ACROSS ALL BRANCHES']);
+    rows.push(['Expense Category','Amount (₹)','% of Grand Total']);
+    Object.entries(grandTotals).sort((a,b)=>b[1]-a[1]).forEach(([cat,amt])=>rows.push([cat,amt,gt?((amt/gt)*100).toFixed(1)+'%':'0%']));
+    rows.push(['GRAND TOTAL',gt,'100%']);
+    if(!Object.keys(bcm).length)rows.push(['No expenses in this date range','','']);
+    const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:30},{wch:20},{wch:18}];
+    XLSX.utils.book_append_sheet(wb,ws,'Category Summary');XLSX.writeFile(wb,`Category_Summary_${dates.from}_${dates.to}.xlsx`);
+  }
+  toast('Excel downloaded! ✓');
+}
+
+// BRANCH
+async function loadBranchHome(){
+  document.getElementById('branch-name-display').textContent=currentUser.name;
+  document.getElementById('branch-company-display').textContent=currentUser.company||'Branch Dashboard';
+  const r=await api('branchStats',{userId:currentUser.id});
+  if(r.success)document.getElementById('branch-balance-display').textContent=fmt(r.balance);
+  document.getElementById('branch-give-date').value=today();document.getElementById('branch-expense-date').value=today();
+}
+async function showBranchStaffList(mode){
+  branchGiveMode=mode;const title=mode==='give'?'Select Staff to Give Cash':'Select Staff to View';
+  showScreen('screen-branch-staff-select',title);document.getElementById('branch-staff-select-title').textContent=title;
+  const r=await api('getStaffByBranch',{branchId:currentUser.id});
+  const c=document.getElementById('branch-staff-list-container');
+  if(!r.success||!r.staff.length){c.innerHTML='<div class="es"><div class="icon">👥</div><p>No staff found</p></div>';return;}
+  c.innerHTML=r.staff.map(s=>`<div class="li" onclick="selectStaff('${s.id}','${s.name}')"><div class="ll2"><div class="ln">${s.name}</div></div><div class="lr"><div class="la at">${fmt(s.balance)}</div><div class="ls">balance</div></div><span class="ch">›</span></div>`).join('');
+}
+async function selectStaff(sid,sname){
+  selectedStaffId=sid;selectedStaffName=sname;
+  if(branchGiveMode==='give'){document.getElementById('branch-give-staff-name').textContent=sname;const r=await api('getStaffBalance',{staffId:sid});if(r.success)document.getElementById('branch-give-staff-balance').textContent=fmt(r.balance);showScreen('screen-branch-give-cash',`Give to ${sname}`);}
+  else showBranchStaffSummary(sid,sname);
+}
+async function submitBranchGiveCash(){
+  const date=document.getElementById('branch-give-date').value,amount=document.getElementById('branch-give-amount').value;
+  if(!amount||amount<=0){toast('Enter valid amount','error');return;}
+  const r=await api('giveCashToStaff',{branchId:currentUser.id,staffId:selectedStaffId,date,amount});
+  if(r.success){toast('Cash given! ✓');document.getElementById('branch-give-amount').value='';loadBranchHome();goBack();goBack();}else toast(r.error||'Failed','error');
+}
+async function submitBranchExpense(){
+  const date=document.getElementById('branch-expense-date').value,amount=document.getElementById('branch-expense-amount').value,category=document.getElementById('branch-expense-category').value,notes=document.getElementById('branch-expense-notes').value.trim();
+  if(!amount||amount<=0){toast('Enter valid amount','error');return;}if(!category){toast('Select category','error');return;}if(category==='Other'&&!notes){toast('Notes required for Other','error');return;}
+  const r=await api('addExpense',{userId:currentUser.id,role:'Branch',date,amount,category,notes});
+  if(r.success){toast('Saved! ✓');document.getElementById('branch-expense-amount').value='';document.getElementById('branch-expense-category').value='';document.getElementById('branch-notes-field').style.display='none';loadBranchHome();goBack();}else toast(r.error||'Failed','error');
+}
+async function showBranchStaffSummary(sid,sname){
+  showScreen('screen-branch-staff-summary',sname+' Summary');
+  const r=await api('getStaffSummary',{staffId:sid,requestedBy:currentUser.id});if(!r.success)return;
+  document.getElementById('branch-staff-summary-stats').innerHTML=`<div class="sb"><div class="sl2">Current Balance</div><div class="sv at">${fmt(r.balance)}</div></div><div class="sb"><div class="sl2">Total Spent</div><div class="sv an">${fmt(r.totalSpent)}</div></div>`;
+  renderTxList(r.transactions,'branch-staff-summary-txs');
+}
+async function loadBranchOwnBalance(){const r=await api('branchStats',{userId:currentUser.id});if(r.success)document.getElementById('branch-own-balance').textContent=fmt(r.balance);}
+async function loadBranchHistory(){const r=await api('getUserHistory',{userId:currentUser.id});if(r.success)renderTxList(r.transactions,'branch-history-container');}
+
+// STAFF
+async function loadStaffHome(){
+  document.getElementById('staff-name-display').textContent=currentUser.name;
+  document.getElementById('staff-branch-display').textContent='Branch: '+(currentUser.branchName||'-');
+  const r=await api('staffStats',{userId:currentUser.id});if(r.success)document.getElementById('staff-balance-display').textContent=fmt(r.balance);
+}
+async function showStaffExpenseForm(){showScreen('screen-staff-expense');document.getElementById('staff-expense-date').value=today();const r=await api('staffStats',{userId:currentUser.id});if(r.success)document.getElementById('staff-form-balance').textContent=fmt(r.balance);}
+async function submitStaffExpense(){
+  const date=document.getElementById('staff-expense-date').value,amount=document.getElementById('staff-expense-amount').value,category=document.getElementById('staff-expense-category').value,notes=document.getElementById('staff-expense-notes').value.trim();
+  if(!amount||amount<=0){toast('Enter valid amount','error');return;}if(!category){toast('Select category','error');return;}if(category==='Other'&&!notes){toast('Notes required for Other','error');return;}
+  const r=await api('addExpense',{userId:currentUser.id,role:'Staff',date,amount,category,notes});
+  if(r.success){toast('Entry saved! ✓');document.getElementById('staff-expense-amount').value='';document.getElementById('staff-expense-category').value='';document.getElementById('staff-notes-field').style.display='none';loadStaffHome();goBack();}else toast(r.error||'Failed','error');
+}
+async function showStaffSummary(){
+  showScreen('screen-staff-summary');
+  const r=await api('getStaffSummary',{staffId:currentUser.id,requestedBy:currentUser.id});if(!r.success)return;
+  document.getElementById('staff-summary-stats').innerHTML=`<div class="sb"><div class="sl2">Current Balance</div><div class="sv at">${fmt(r.balance)}</div></div><div class="sb"><div class="sl2">Total Spent</div><div class="sv an">${fmt(r.totalSpent)}</div></div>`;
+  renderTxList(r.transactions.slice(0,10),'staff-summary-txs');
+}
+</script>
+</body>
+</html>
