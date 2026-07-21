@@ -103,6 +103,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .rc p{font-size:.8rem;color:var(--muted);margin-bottom:14px}
 #edit-modal{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}
 #edit-modal.show{display:flex}
+#forgot-modal{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}
+#forgot-modal.show{display:flex}
 .modal-card{background:#fff;border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px;box-shadow:0 -8px 32px rgba(0,0,0,.15);animation:su .25s ease;max-height:90vh;overflow-y:auto}
 @keyframes su{from{transform:translateY(100%)}to{transform:none}}
 .mt{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:20px}
@@ -148,6 +150,28 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 
+<div id="forgot-modal">
+  <div class="modal-card">
+    <div class="mt">🔑 Reset Password</div>
+    <div id="forgot-step1">
+      <div class="field"><label>Email</label><input type="email" id="forgot-email" placeholder="your@email.com" autocomplete="email"></div>
+      <div class="ma">
+        <button class="btn bs btn-sm" onclick="closeForgotModal()">Cancel</button>
+        <button class="btn bp btn-sm" onclick="sendForgotCode()">Send Code</button>
+      </div>
+    </div>
+    <div id="forgot-step2" style="display:none">
+      <p style="font-size:.8rem;color:#666;margin-bottom:12px">📧 We've emailed a 6-digit code. Enter it below with your new password.</p>
+      <div class="field"><label>Code from email</label><input type="text" id="forgot-otp" maxlength="6" placeholder="6-digit code"></div>
+      <div class="field"><label>New Password</label><input type="password" id="forgot-newpass" placeholder="New password"></div>
+      <div class="ma">
+        <button class="btn bs btn-sm" onclick="closeForgotModal()">Cancel</button>
+        <button class="btn bp btn-sm" onclick="submitForgotReset()">Reset Password</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="login-screen" style="display:none">
   <div class="ll">Petty<span>Cash</span></div>
   <div class="lt">Branch Management System</div>
@@ -156,6 +180,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="your@email.com" autocomplete="email"></div>
     <div class="field"><label>Password</label><input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"></div>
     <button class="btn bp" onclick="doLogin()">Sign In</button>
+    <div style="text-align:center;margin-top:12px;"><a href="#" onclick="openForgotModal();return false;" style="font-size:.8rem;color:rgba(255,255,255,.85);text-decoration:underline;">Forgot password?</a></div>
   </div>
   <div class="ct"></div>
 </div>
@@ -339,6 +364,35 @@ async function doLogin(){
   const res=await api('login',{email,password});
   if(res.success){currentUser=res.user;localStorage.setItem('pc_user',JSON.stringify(currentUser));document.getElementById('login-screen').style.display='none';initApp();}
   else toast(res.error||'Login failed','error');
+}
+function openForgotModal(){
+  document.getElementById('forgot-email').value='';
+  document.getElementById('forgot-otp').value='';
+  document.getElementById('forgot-newpass').value='';
+  document.getElementById('forgot-step1').style.display='block';
+  document.getElementById('forgot-step2').style.display='none';
+  document.getElementById('forgot-modal').classList.add('show');
+}
+function closeForgotModal(){document.getElementById('forgot-modal').classList.remove('show');}
+async function sendForgotCode(){
+  const email=document.getElementById('forgot-email').value.trim().toLowerCase();
+  if(!email){toast('Enter your email','error');return;}
+  const res=await api('forgotPassword',{email});
+  if(res.success){
+    toast('Code sent! Check your email 📧');
+    document.getElementById('forgot-step1').style.display='none';
+    document.getElementById('forgot-step2').style.display='block';
+  } else toast(res.error||'Failed to send code','error');
+}
+async function submitForgotReset(){
+  const email=document.getElementById('forgot-email').value.trim().toLowerCase();
+  const otp=document.getElementById('forgot-otp').value.trim();
+  const newPassword=document.getElementById('forgot-newpass').value;
+  if(!/^[0-9]{6}$/.test(otp)){toast('Enter the 6-digit code from your email','error');return;}
+  if(!newPassword||newPassword.length<4){toast('Password too short','error');return;}
+  const res=await api('resetPassword',{email,otp,newPassword});
+  if(res.success){toast('Password updated! Please sign in ✓');closeForgotModal();}
+  else toast(res.error||'Failed to reset password','error');
 }
 function doLogout(){localStorage.removeItem('pc_user');currentUser=null;screenStack=[];document.getElementById('app').style.display='none';document.getElementById('login-screen').style.display='flex';document.getElementById('login-email').value='';document.getElementById('login-password').value='';}
 
