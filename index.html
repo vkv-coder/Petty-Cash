@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>PettyCash Pro</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1a6fdb">
+<link rel="icon" href="/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -630,6 +634,12 @@ async function showStaffSummary(){
   const r=await api('getStaffSummary',{staffId:currentUser.id,requestedBy:currentUser.id});if(!r.success)return;
   document.getElementById('staff-summary-stats').innerHTML=`<div class="sb"><div class="sl2">Current Balance</div><div class="sv at">${fmt(r.balance)}</div></div><div class="sb"><div class="sl2">Total Spent</div><div class="sv an">${fmt(r.totalSpent)}</div></div>`;
   renderTxList(r.transactions.slice(0,10),'staff-summary-txs');
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
 }
 </script>
 </body>
