@@ -442,9 +442,9 @@ function renderTxList(txs,cId){
 async function loadOwnerHome(){
   document.getElementById('owner-name-display').textContent=currentUser.name;
   const r=await api('ownerStats',{userId:currentUser.id});
-  if(r.success)document.getElementById('owner-total-deployed').textContent=fmt(r.totalDeployed);
+  if(r.success)document.getElementById('owner-total-deployed').textContent=fmt(r.totalDeployed);else toast('Could not load total deployed balance','error');
   const b=await api('getBranches',{userId:currentUser.id});
-  if(b.success){const s=document.getElementById('owner-branch-select');s.innerHTML='<option value="">-- Select Branch --</option>';b.branches.forEach(br=>s.innerHTML+=`<option value="${br.id}">${br.name}</option>`);}
+  if(b.success){const s=document.getElementById('owner-branch-select');s.innerHTML='<option value="">-- Select Branch --</option>';b.branches.forEach(br=>s.innerHTML+=`<option value="${br.id}">${br.name}</option>`);}else toast('Could not load branch list','error');
   document.getElementById('owner-send-date').value=today();
 }
 async function loadBranchBalanceForOwner(){
@@ -452,7 +452,7 @@ async function loadBranchBalanceForOwner(){
   const bar=document.getElementById('owner-branch-balance-bar');
   if(!bid){bar.style.display='none';return;}
   const r=await api('getBranchBalance',{branchId:bid,userId:currentUser.id});
-  if(r.success){bar.style.display='flex';document.getElementById('owner-branch-balance-val').textContent=fmt(r.balance);}
+  if(r.success){bar.style.display='flex';document.getElementById('owner-branch-balance-val').textContent=fmt(r.balance);}else toast('Could not load branch balance','error');
 }
 async function submitOwnerSendCash(){
   const bid=document.getElementById('owner-branch-select').value,date=document.getElementById('owner-send-date').value,amount=document.getElementById('owner-send-amount').value;
@@ -480,7 +480,7 @@ async function showOwnerBranchDetail(bid,bname){
 // ALL TX + EDIT
 async function loadAllTransactions(){
   const r=await api('getAllTransactions',{userId:currentUser.id});
-  if(r.success){allTxData=r.transactions;renderAllTx(allTxData);}
+  if(r.success){allTxData=r.transactions;renderAllTx(allTxData);}else toast('Could not load transactions','error');
 }
 function renderAllTx(txs){
   const c=document.getElementById('owner-all-tx-container');
@@ -582,7 +582,7 @@ async function loadBranchHome(){
   document.getElementById('branch-name-display').textContent=currentUser.name;
   document.getElementById('branch-company-display').textContent=currentUser.company||'Branch Dashboard';
   const r=await api('branchStats',{userId:currentUser.id});
-  if(r.success)document.getElementById('branch-balance-display').textContent=fmt(r.balance);
+  if(r.success)document.getElementById('branch-balance-display').textContent=fmt(r.balance);else toast('Could not load branch balance','error');
   document.getElementById('branch-give-date').value=today();document.getElementById('branch-expense-date').value=today();
 }
 async function showBranchStaffList(mode){
@@ -616,14 +616,14 @@ async function showBranchStaffSummary(sid,sname){
   document.getElementById('branch-staff-summary-stats').innerHTML=`<div class="sb"><div class="sl2">Current Balance</div><div class="sv at">${fmt(r.balance)}</div></div><div class="sb"><div class="sl2">Total Spent</div><div class="sv an">${fmt(r.totalSpent)}</div></div>`;
   renderTxList(r.transactions,'branch-staff-summary-txs');
 }
-async function loadBranchOwnBalance(){const r=await api('branchStats',{userId:currentUser.id});if(r.success)document.getElementById('branch-own-balance').textContent=fmt(r.balance);}
-async function loadBranchHistory(){const r=await api('getUserHistory',{userId:currentUser.id});if(r.success)renderTxList(r.transactions,'branch-history-container');}
+async function loadBranchOwnBalance(){const r=await api('branchStats',{userId:currentUser.id});if(r.success)document.getElementById('branch-own-balance').textContent=fmt(r.balance);else toast('Could not load balance','error');}
+async function loadBranchHistory(){const r=await api('getUserHistory',{userId:currentUser.id});if(r.success)renderTxList(r.transactions,'branch-history-container');else toast('Could not load history','error');}
 
 // STAFF
 async function loadStaffHome(){
   document.getElementById('staff-name-display').textContent=currentUser.name;
   document.getElementById('staff-branch-display').textContent='Branch: '+(currentUser.branchName||'-');
-  const r=await api('staffStats',{userId:currentUser.id});if(r.success)document.getElementById('staff-balance-display').textContent=fmt(r.balance);
+  const r=await api('staffStats',{userId:currentUser.id});if(r.success)document.getElementById('staff-balance-display').textContent=fmt(r.balance);else toast('Could not load balance','error');
 }
 async function showStaffExpenseForm(){showScreen('screen-staff-expense');document.getElementById('staff-expense-date').value=today();const r=await api('staffStats',{userId:currentUser.id});if(r.success)document.getElementById('staff-form-balance').textContent=fmt(r.balance);}
 async function submitStaffExpense(){
